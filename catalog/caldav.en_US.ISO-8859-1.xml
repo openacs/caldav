@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="caldav" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="aggregated_calendar_name">%instance_name% Calendar for %user_name%</msg>
+</message_catalog>
