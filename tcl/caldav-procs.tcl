@@ -967,10 +967,10 @@ namespace eval ::caldav {
         #
         set uid_clauses {}
         if {[llength $cal_uids] > 0} {
-            lappend uid_clauses "u.cal_uid in ([ template::util::tcl_to_sql_list $cal_uids ])"
+            lappend uid_clauses "u.cal_uid in ([ns_dbquotelist $cal_uids])"
         }
         if {[llength $act_ids] > 0} {
-            lappend uid_clauses "e.activity_id in ([ template::util::tcl_to_sql_list $act_ids ])"
+            lappend uid_clauses "e.activity_id in ([ns_dbquotelist $act_ids])"
         }
         ns_log notice uid_clauses=$uid_clauses
         
