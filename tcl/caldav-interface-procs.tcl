@@ -234,7 +234,7 @@ nx::Object create ::caldav::calendars {
                 join dotlrn_community_applets a on (a.package_id = c.package_id)
                 join dotlrn_applets ap on (ap.applet_id = a.applet_id) where
                 ap.package_key = 'dotlrn-calendar' and
-                a.community_id = m.community_id;
+                a.community_id = m.community_id
             }]
         } else {
             set result {}

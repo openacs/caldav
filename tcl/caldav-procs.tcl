@@ -85,7 +85,7 @@ namespace eval ::caldav {
                                   ::xo::dc list -prepare integer cal {
                                       select calendar_id from calendars
                                       where package_id = :main_calendar_package_id
-                                      and private_p = 'f';
+                                      and private_p = 'f'
                                   }]
         } else {
             set calendar_ids {}
