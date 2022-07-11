@@ -7,12 +7,12 @@ namespace eval ::caldav::test {
         {-private:boolean false}
         {calendar_name test_calendar}
     } {
-	
+
 	Create a simple calendar with a few items for testing
 	purposes.
-	
+
     } {
-        
+
         if {$user_id eq ""} {
             #
             # We use here a password to be able to connect to this
@@ -22,10 +22,10 @@ namespace eval ::caldav::test {
             set user_info [::acs::test::user::create \
                                -email $email \
                                -password cal789dav]
-            aa_log "USER created: $user_info" 
+            aa_log "USER created: $user_info"
             set user_id [dict get $user_info user_id]
             set calendar_name "private calendar of $email"
-            
+
             #
             # Check, if this user has already a private calendar
             #
@@ -36,7 +36,7 @@ namespace eval ::caldav::test {
                 and    owner_id = :user_id
             } 0]
             aa_log "select calendar $calendar_name for user $user_id returns $priv_calendar_id"
-            
+
             if {$priv_calendar_id == 0} {
                 #
                 # This user does not have a private calendar, create
@@ -54,7 +54,7 @@ namespace eval ::caldav::test {
                     calendar::item::delete -cal_item_id $cal_item_id
                 }
             }
-            
+
             #
             # add private calendar items
             #
@@ -93,7 +93,7 @@ namespace eval ::caldav::test {
         }
         set priv_cal_item_ids [::xo::dc list get_calitems {
             select c.cal_item_id from cal_items c where on_which_calendar = :priv_calendar_id
-        }]        
+        }]
         aa_log "found [llength $priv_cal_item_ids] calendar items in private calendar $priv_calendar_id"
 
         #
@@ -107,9 +107,9 @@ namespace eval ::caldav::test {
             and    private_p = :private_p
             and    owner_id = :user_id
         } 0]
-        
+
         if {$calendar_id > 0} {
-            
+
             set cal_item_ids [::xo::dc list get_calitems {
                 select c.cal_item_id from cal_items c where on_which_calendar = :calendar_id
             }]
@@ -117,7 +117,7 @@ namespace eval ::caldav::test {
             foreach cal_item_id $cal_item_ids {
                 calendar::item::delete -cal_item_id $cal_item_id
             }
-            
+
         } else {
             #
             # Create test calendar
@@ -130,7 +130,7 @@ namespace eval ::caldav::test {
         # Add calendar items
         #
         set cal_item_ids {}
-        
+
         # make a longer description, add a newline to it.
         set description [string repeat "This is a sample entry. " 10]
         set description $description\n$description
@@ -151,7 +151,7 @@ namespace eval ::caldav::test {
                               -description $description \
                               -calendar_id $calendar_id]
         lappend cal_item_ids $cal_item_id1
-        
+
         #
         # recurring item
         #
@@ -179,7 +179,7 @@ namespace eval ::caldav::test {
                               -description $summary \
                               -calendar_id $calendar_id]
         lappend cal_item_ids $cal_item_id3
-        
+
 	return [list \
 		    calendar_id $calendar_id \
 		    calendar_name $calendar_name \
@@ -191,10 +191,10 @@ namespace eval ::caldav::test {
     }
 
     ad_proc -private ::caldav::test::get_lowest_uid {-user_info } {
-        
+
         Get from the private calendar of the provided user the
         lowest uid.
-        
+
     } {
         set user_id [dict get $user_info user_id]
 	set private_calendar_id [::caldav::get_sync_calendar -user_id $user_id]
@@ -205,13 +205,13 @@ namespace eval ::caldav::test {
         #aa_log <pre>$ical_response</pre>
         return [lindex [lsort -integer [dict get $ical_summary uids]] 0]
     }
-   
+
 
     ad_proc -private ::caldav::test::item_stats {event_list} {
-	
+
 	Check the provided items and return a dict with descriptive
 	statistics.
-	
+
     } {
 	foreach c {integer_uid recurrence uid} {
 	    set entries($c) 0
@@ -260,7 +260,7 @@ namespace eval ::caldav::test {
 	descriptive statistics.
     } {
     	#set F [open [ad_tmpdir]/dump.ics w]; puts -nonewline $F $resp; close $F
-	
+
 	array set count {
 	    lines 0 lines_without_crlf 0 overlong_lines 0 continuation_lines 0
 	    nr_uids 0 uids {}
@@ -319,11 +319,11 @@ namespace eval ::caldav::test {
 	extract tags from the ical text
         # TODO: could go into ical procs
     } {
-        
+
         regsub -all "\n " $ical_text "" ical_text
         regsub -all "\r" $ical_text "" ical_text
         set result {}
-        
+
         foreach line [split $ical_text \n] {
             if {[regexp "^${tag}(\;\[^:\]+|):(.*)$" $line . params value]} {
                 if {$params ne ""} {
@@ -336,7 +336,7 @@ namespace eval ::caldav::test {
 	return $result
     }
 
-    
+
     ad_proc -private ::caldav::test::propfind_body {props} {
         append result \
             {<?xml version="1.0" encoding="UTF-8"?>} \n\
@@ -384,7 +384,7 @@ namespace eval ::caldav::test {
         return $d
     }
 
-    
+
 }
 
 # the following is transitional code, until acs-automated-testing is updated.
@@ -409,7 +409,7 @@ aa_register_case -cats {api} -procs {
 } get_calitems {
 
     API test for [calendars get_calitems] used in different calls.
-    
+
     The query can be constraint via -user_id, -start_date, and -end_date
 } {
     #
@@ -419,7 +419,7 @@ aa_register_case -cats {api} -procs {
     aa_run_with_teardown -rollback -test_code {
 	set info [::caldav::test::basic_setup]
 	#aa_log $info
-        
+
 	set event_list [::caldav::calendars get_calitems \
 			    -user_id [dict get $info user_id] \
 			    -start_date "2019-01-01 00:00:00.0+02" \
@@ -434,11 +434,11 @@ aa_register_case -cats {api} -procs {
 	    [llength [dict get $info cal_item_ids]] == [llength $event_list]
 	}
 	set item_summary [::caldav::test::item_stats $event_list]
-	
+
 	aa_equals "Calendar entries:" \
 	    {integer_uid 3 recurrence 1 uid 3} \
 	    [lsort -stride 2 $item_summary]
-	
+
 	set ical_text [::caldav::test::render_items -name [dict get $info calendar_name] $event_list]
         aa_log "Result body:<pre>\n[::aa_test::visualize_control_chars $ical_text]</pre>"
 
@@ -467,7 +467,7 @@ aa_register_case -cats {api} -procs {
 	aa_equals "Calendar entries of calendar $private_calendar_id:" \
             [lsort -stride 2 $item_summary] \
 	    {integer_uid 3 recurrence 1 uid 3}
-	
+
 	set ical_text [::caldav::test::render_items -name $calInfo(calendar_name) $event_list]
         aa_log "Result body:<pre>\n[::aa_test::visualize_control_chars $ical_text]</pre>"
 
@@ -492,10 +492,10 @@ aa_register_case -cats {web} -procs {
 
     aa_log "Headers: [ns_set array [dict get $d headers]]"
     aa_log "Result body:<pre>\n[::aa_test::visualize_control_chars [dict get $d body]]</pre>"
-    
+
     acs::test::reply_has_status_code $d 200
 }
- 
+
 
 aa_register_case -cats {web} -procs {
     "::caldav::CalDAV instproc GET"
@@ -506,7 +506,7 @@ aa_register_case -cats {web} -procs {
     "::xo::ProtocolHandler instproc handle_request"
     "::dt_no_time_p"
     "::xo::ical::VCALITEM instproc ical_body"
-    
+
 } GET {
 
     GET method over the web interface (no OS-specific differences)
@@ -521,7 +521,7 @@ aa_register_case -cats {web} -procs {
 	set personal_calendar_id 0
 	set personal_calendar_id [::caldav::get_sync_calendar -user_id $user_id]
         aa_log "temp_calendar_id $temp_calendar_id, personal_calendar_id $personal_calendar_id"
-        
+
 	foreach {calendar_id nr_uids label} [subst {
 	    $temp_calendar_id $temp_calendar_items "testing calendar"
 	    $personal_calendar_id 3 "private calendar"
@@ -530,7 +530,7 @@ aa_register_case -cats {web} -procs {
 
             foreach template {
                 {/caldav/calendar/?calendar_ids=$calendar_id}
-                {/caldav/calendar/$calendar_id}                
+                {/caldav/calendar/$calendar_id}
             } {
                 set URL [subst $template]
                 aa_section "$label $URL"
@@ -543,7 +543,7 @@ aa_register_case -cats {web} -procs {
                 set ical_stats [::caldav::test::ical_stats $ical_text]
                 aa_log "Result body:<pre>\n[::aa_test::visualize_control_chars $ical_text]</pre>"
                 acs::test::reply_has_status_code $d 200
-                
+
                 set content_length [ns_set iget [dict get $d headers] content-length]
                 aa_true "Content-Length $content_length plausible" {$content_length > 200}
                 aa_equals "Ical valid" [::caldav::test::ical_valid $ical_text] ""
@@ -573,7 +573,7 @@ aa_register_case -cats {web} -procs {
                 }
             }
 	}
-		
+
     } on error {errorMsg} {
 	aa_true "Error msg: $errorMsg" 0
     } finally {
@@ -624,7 +624,7 @@ aa_register_case -cats {web} -procs {
 	    </A:prop>
 	    </A:propfind>
 	}
-	
+
 	set d [::acs::test::http \
 		   -user_info $user_info \
 		   -method PROPFIND \
@@ -650,7 +650,7 @@ aa_register_case -cats {web} -procs {
             }
             set principal_url [::acs::test::xpath::get_text $response d:propstat/d:prop/d:current-user-principal]
         }
-		
+
 	#
 	# Principal query from iOS/11.2.6.
 	# Note that the principal query for iOS ends with a "/"
@@ -665,7 +665,7 @@ aa_register_case -cats {web} -procs {
 
 	aa_equals "Status code valid" [dict get $d status] 200
 	aa_equals "Allowed: " [ns_set iget [dict get $d headers] Allow] "OPTIONS,GET,DELETE,PROPFIND,PUT,REPORT"
-	
+
 
 	set d [::acs::test::http \
 		   -user_info $user_info \
@@ -706,7 +706,7 @@ aa_register_case -cats {web} -procs {
         }
 
 	#
-	# Calendar Query 
+	# Calendar Query
 	#
 	set d [::acs::test::http \
 		   -user_info $user_info \
@@ -753,7 +753,7 @@ aa_register_case -cats {web} -procs {
                        <A:supported-report-set/>
                        <A:sync-token/>
                        </A:prop>
-                       </A:propfind>    
+                       </A:propfind>
 		   } \
 		   $calendar_url]
 
@@ -904,7 +904,7 @@ aa_register_case -cats {web} -procs {
             incr nr_hrefs
         }
         aa_log "run calendar-multiget REPORT on the following hrefs:\n$href_xml"
-        
+
         #
 	# now run REPORT over the returned hrefs
         #
@@ -982,7 +982,7 @@ aa_register_case -cats {web} -procs {
     } finally {
 	#calendar::delete -calendar_id $temp_calendar_id
     }
-    
+
 }
 
 
@@ -1030,9 +1030,9 @@ aa_register_case -cats {web} -procs {
             }
             set principal_url [::acs::test::xpath::get_text $response d:propstat/d:prop/d:current-user-principal]
         }
-	
+
 	#
-	# Principal query 
+	# Principal query
 	#
 	set d [::acs::test::http \
 		   -user_info $user_info \
@@ -1077,7 +1077,7 @@ aa_register_case -cats {web} -procs {
         aa_log "Result body:<pre>\n[::aa_test::visualize_control_chars $xml]</pre>"
 
         ::caldav::test::foreach_response response $xml {
-            
+
             ::acs::test::xpath::non_empty $response {
                 d:propstat/d:prop/d:displayname
                 d:propstat/d:prop/cs:getctag
@@ -1085,7 +1085,7 @@ aa_register_case -cats {web} -procs {
             ::acs::test::xpath::equals $response {
                 d:href /caldav/calendar/
             }
-	    
+
 	}
     } on error {errorMsg} {
 	aa_true "Error msg: $errorMsg" 0
@@ -1127,7 +1127,7 @@ aa_register_case -cats {web} -procs {
 	aa_equals "Status code valid" [dict get $d status] 207
 	set xml [dict get $d body]
         aa_log "Result body:<pre>\n[::aa_test::visualize_control_chars $xml]</pre>"
-	
+
         ::caldav::test::foreach_response response $xml {
             ::acs::test::xpath::non_empty $response {
                 d:propstat/d:prop/cs:getctag
@@ -1190,7 +1190,7 @@ aa_register_case -cats {web} -procs {
     Open Thunderbird Calendar
     Double click under the "Calendar" pulldown in the left menu
     Create calendar "On the Network",
-    Select Format "CalDAV" and 
+    Select Format "CalDAV" and
     location e.g. http://localhost:8100/caldav/ does NOT work, but
     location e.g. http://localhost:8100/caldav/calendar works
 
@@ -1231,7 +1231,7 @@ aa_register_case -cats {web} -procs {
                 d:href                                       /caldav/
                 d:propstat/d:prop/d:current-user-principal   /caldav/principal
                 d:propstat/d:prop/d:owner                    ""
-                d:propstat/d:prop/cs:getctag                 ""                
+                d:propstat/d:prop/cs:getctag                 ""
             }
         }
     } on error {errorMsg} {
@@ -1253,7 +1253,7 @@ aa_register_case -cats {web} -procs {
 
     Add a new event via Thunderbirld Calendar application, after
     subscribing via caldav.
-    
+
 } {
     set info [::caldav::test::basic_setup]
     set user_info [dict get $info user_info]
@@ -1323,32 +1323,32 @@ aa_register_case -cats {web} -procs {
         set isummary [::caldav::test::ical_extract $icalText SUMMARY]
 
         aa_log "created $created DTSTART $DTSTART DTEND $DTEND"
-        
+
 	set d [::acs::test::http \
 		   -user_info $user_info \
 		   -method PUT \
                    -headers {Content-Type text/calendar} \
                    -body $icalText \
                    /caldav/calendar/$uid.ics]
-    
+
         aa_equals "Status code valid" [dict get $d status] 201
 
 	set d [::acs::test::http \
 		   -user_info $user_info \
 		   -method GET \
                    /caldav/calendar/$uid.ics]
-    
+
         set rIcalText [dict get $d body]
 	aa_log "Result body:<pre>\n[::aa_test::visualize_control_chars $rIcalText]</pre>"
 
         set rsummary     [::caldav::test::ical_extract $rIcalText SUMMARY]
         set rdescription [::caldav::test::ical_extract $rIcalText DESCRIPTION]
-    
+
         aa_equals "Retrieved Ical valid" [::caldav::test::ical_valid $rIcalText] ""
 
         set rlocation    [::caldav::test::ical_extract $rIcalText LOCATION]
         set rsummary     [::caldav::test::ical_extract $rIcalText SUMMARY]
-        
+
         aa_equals "location empty"        $rlocation ""
         aa_true   "last_modified updated" {$isummary eq $rsummary}
 
@@ -1493,7 +1493,7 @@ aa_register_case -cats {web} -procs {
             ::acs::test::xpath::equals $response {
                 d:href                                       /caldav/
                 d:propstat/d:prop/c:calendar-home-set        /caldav/calendar
-                d:propstat/d:prop/d:current-user-principal   /caldav/principal               
+                d:propstat/d:prop/d:current-user-principal   /caldav/principal
                 d:propstat/d:prop/d:principal-URL            /caldav/principal
             }
         }
@@ -1655,7 +1655,7 @@ aa_register_case -cats {web} -procs {
             {END:STANDARD&#13;} \n\
             {END:VTIMEZONE&#13;} \n\
             {END:VCALENDAR&#13;} \n
-        
+
         set d [::caldav::test::proppatch \
                    -user_info $user_info \
                    -prefix "$queryNr: " \
@@ -1696,7 +1696,7 @@ aa_register_case -cats {web} -procs {
                 d:propstat/d:prop/cs:getctag
             }
         }
-        
+
         #
 	# 8. Query REPORT for etags and getcontenttype
         # TODO: filter + calendar-query guessed, has to corrected for macOS client
@@ -1742,7 +1742,7 @@ aa_register_case -cats {web} -procs {
         # TODO: filter + calendar-query guessed, has to corrected for macOS client
         #
         incr queryNr
-        
+
 	set d [::acs::test::http -prefix "$queryNr: " \
                    -user_info $user_info \
 		   -method REPORT \
@@ -1787,7 +1787,7 @@ aa_register_case -cats {web} -procs {
         # .... not clear what it can return, all checked clients ignore this
         #
         incr queryNr
-        
+
         set XMLquery {<E:checksum-versions xmlns:E="http://calendarserver.org/ns/"/>}
 	set d [::acs::test::http -prefix "$queryNr: " \
                    -user_info $user_info \
@@ -1864,7 +1864,7 @@ aa_register_case -cats {web} -procs {
 } macOS_add_location {
 
     Add a location via macOS Calendar application.
-    
+
     Go to calendar entry in macOS Calendar on a calendar item (without
     a registered UID) and add an Apple location (APPLE-STRUCTURED-LOCATION)
 
@@ -1880,7 +1880,7 @@ aa_register_case -cats {web} -procs {
         #
         set uid [::caldav::test::get_lowest_uid -user_info $user_info]
         aa_log "get_lowest_uid -> '$uid' ($user_info)"
-        
+
         set d [::acs::test::http \
                    -user_info $user_info \
                    -method GET \
@@ -1931,14 +1931,14 @@ aa_register_case -cats {web} -procs {
             {END:VALARM} \r\n\
             {END:VEVENT} \r\n\
             {END:VCALENDAR} \r\n
-        
+
         set d [::acs::test::http \
                    -user_info $user_info \
                    -method PUT \
                    -headers {Content-Type text/calendar If-Match db70bfb110288c02f6f0a0e3c862ce8e} \
                    -body $icalText \
                    /caldav/calendar/$uid.ics]
-    
+
         aa_equals "Status code valid" [dict get $d status] 201
         set mlocation      [::caldav::test::ical_extract $icalText LOCATION]
         set mlast_modified [::caldav::test::ical_extract $icalText LAST-MODIFIED]
@@ -1946,14 +1946,14 @@ aa_register_case -cats {web} -procs {
                    -user_info $user_info \
                    -method GET \
                    /caldav/calendar/$uid.ics]
-    
+
         set updatedIcalText [dict get $d body]
         aa_log "Retrieved modified ical text:<pre>\n[::aa_test::visualize_control_chars $updatedIcalText]</pre>"
         aa_equals "updated Ical valid" [::caldav::test::ical_valid $updatedIcalText] ""
-        
+
         set ulocation      [::caldav::test::ical_extract $updatedIcalText LOCATION]
         set ulast_modified [::caldav::test::ical_extract $updatedIcalText LAST-MODIFIED]
-        
+
         set alarm_uid      [::caldav::test::ical_extract $updatedIcalText X-WR-ALARMUID]
         set structured_loc [::caldav::test::ical_extract $updatedIcalText X-APPLE-STRUCTURED-LOCATION]
 
@@ -1979,7 +1979,7 @@ aa_register_case -cats {web} -procs {
 } macOS_add_event {
 
     Add a new event via macOS Calendar application.
-    
+
     Go to calendar entry in macOS Calendar and add a new calendar entry.
 
 } {
@@ -2007,7 +2007,7 @@ aa_register_case -cats {web} -procs {
             aa_log "deleting cal_item $cal_item_id with uid $uid"
             calendar::item::delete -cal_item_id $cal_item_id
         }
-        
+
         set icalText ""
         append icalText \
             {BEGIN:VCALENDAR} \r\n\
@@ -2106,15 +2106,15 @@ aa_register_case -cats {web} -procs {
         # DESCRIPTION:from Calendar
         # END:VEVENT
         # END:VCALENDAR
-        
-        
+
+
 	set d [::acs::test::http \
                    -user_info $user_info \
 		   -method PUT \
                    -headers {Content-Type text/calendar} \
                    -body $icalText \
                    /caldav/calendar/$uid.ics]
-    
+
         aa_equals "Status code valid" [dict get $d status] 201
         set isummary [::caldav::test::ical_extract $icalText SUMMARY]
 
@@ -2122,14 +2122,14 @@ aa_register_case -cats {web} -procs {
 		   -user_info $user_info \
 		   -method GET \
                    /caldav/calendar/$uid.ics]
-    
+
 	set rIcalText [dict get $d body]
 	aa_log "Result body:<pre>\n[::aa_test::visualize_control_chars $rIcalText]<pre>"
         aa_equals "Retrieved Ical valid" [::caldav::test::ical_valid $rIcalText] ""
 
         set rlocation    [::caldav::test::ical_extract $rIcalText LOCATION]
         set rsummary     [::caldav::test::ical_extract $rIcalText SUMMARY]
-        
+
         aa_equals "location empty"        $rlocation ""
         aa_true   "last_modified updated" {$isummary eq $rsummary}
 
