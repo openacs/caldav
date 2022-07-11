@@ -68,7 +68,7 @@ nx::Object create ::caldav::calendars {
             foreach day [split $days_of_week " "] {
                 lappend rec_list [lindex $week_list $day]
             }
-            append recur_rule ";BYDAY=" [ns_dbquotelist $rec_list]
+            append recur_rule ";BYDAY=" [join $rec_list ,]
         }
 
         if {$every_nth_interval ne ""} {
