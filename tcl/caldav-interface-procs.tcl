@@ -220,13 +220,13 @@ nx::Object create ::caldav::calendars {
         # Get calendars from communities, when DotLRN is active.
         #
         if {[info commands ::dotlrn_calendar::my_package_key] ne ""} {
-            set result [list {
+            set result [list "
                 WITH communities AS (
                                      select distinct dcc.community_id
                                      from dotlrn_communities_core dcc
                                      inner join dotlrn_member_rels_approved dma
                                      on dcc.community_id = dma.community_id 
-                                     and dma.user_id = :user_id
+                                     and dma.user_id = $user_id
                                      and dcc.archived_p = 'f'
                                      )
                 select calendar_id
@@ -235,7 +235,7 @@ nx::Object create ::caldav::calendars {
                 join dotlrn_applets ap on (ap.applet_id = a.applet_id) where
                 ap.package_key = 'dotlrn-calendar' and
                 a.community_id = m.community_id
-            }]
+            "]
         } else {
             set result {}
         }
