@@ -1,7 +1,7 @@
-ad_library {    
+ad_library {
     CalDav implementation for OpenACS. Abstraction between calendars
     and items Parsing, formatting, retrieving calendar items.
-    
+
     @author Gustaf Neumann
     @author marmoser@wu.ac.at
     @creation-date Jan, 2017
@@ -16,11 +16,11 @@ nx::Object create ::caldav::calendars {
     #  The class "calendars" implements the interface to the database
     #  structures.
     #
-    
+
     :object method debug {msg} {
         ns_log Debug(caldav) "[uplevel current proc]: $msg"
     }
-    
+
     # TODO move get_sync_calendar here
     #
     :public object method format_recurrence {
@@ -79,19 +79,19 @@ nx::Object create ::caldav::calendars {
             set stamp [string range $recur_until 0 18]
             append recur_rule ";UNTIL=" [xo::ical tcl_time_to_utc $stamp]
         }
-        
+
         #ns_log notice "recur_rule $recur_rule"
         return "$recur_rule\r\n"
     }
 
-    
+
     :public object method get_cal_item_from_uid {
         {-calendar_ids:integer,0..n}
         uid
     } {
         # @return for a uid the cal_item_id(s?)
         # @param uid unique id of an calendar item
-        
+
         #
         # GN TODO:
         #
@@ -106,7 +106,7 @@ nx::Object create ::caldav::calendars {
         #   correctly? (c) if needed, name should be change to
         #   get_cal_items_from_uid
         #
-        # - HOW ABOUT using activity_id instead of the cal_item_id... such as get_activity_from_uid 
+        # - HOW ABOUT using activity_id instead of the cal_item_id... such as get_activity_from_uid
         #
         # - probably base on get_calendar_and_cal_item_from_uid
         #
@@ -119,7 +119,7 @@ nx::Object create ::caldav::calendars {
             set calclause "= :calendar_ids"
         }
         set e_clause [expr {[string is integer $uid] ? " or e.activity_id = :uid" : ""}]
-        
+
         return [::xo::dc list get_cal_item_from_uid [subst {
             select cal_item_id
             from cal_items c, acs_events e
@@ -132,7 +132,7 @@ nx::Object create ::caldav::calendars {
             order by 1 desc
         }]]
     }
-    
+
     :public object method get_calendar_and_cal_item_from_uid {
         {-calendar_ids:integer,0..n}
         uid
@@ -145,7 +145,7 @@ nx::Object create ::caldav::calendars {
         #
         # - see above... get_cal_item_from_uid
         #
-        # The following query is tricky, since it avoids 
+        # The following query is tricky, since it avoids
         # an error "invalid input syntax for integer" on uids like
         #
         #     23009F17-383F-4FBD-92D4-AB0F27CF7326
@@ -157,7 +157,7 @@ nx::Object create ::caldav::calendars {
             from acs_events e, cal_items c
             where e.activity_id in
             (
-             select CASE WHEN :uid !~ '^[0-9]+$' THEN NULL ELSE :uid ::text::integer END 
+             select CASE WHEN :uid !~ '^[0-9]+$' THEN NULL ELSE :uid ::text::integer END
              union (select on_which_activity from cal_uids where cal_uid = :uid)
             )
             and c.cal_item_id = e.event_id
@@ -176,8 +176,8 @@ nx::Object create ::caldav::calendars {
         #} else {
         #    set calclause "= :calendar_ids"
         #}
-        
-        # return [::xo::dc list query_calendar_and_cal_item [subst {            
+
+        # return [::xo::dc list query_calendar_and_cal_item [subst {
         #     select c.on_which_calendar, cal_item_id
         #     from cal_items c, acs_events e
         #     left outer join cal_uids u on u.on_which_activity = e.activity_id
@@ -188,7 +188,7 @@ nx::Object create ::caldav::calendars {
 
     }
 
-    
+
     :public object method alwaysQueriedCalendars {
         {-with_sync_calendar:boolean true}
         user_id:integer
@@ -205,14 +205,14 @@ nx::Object create ::caldav::calendars {
     } {
         set calendar_ids [:alwaysQueriedCalendars $user_id]
         if {[llength $calendar_ids] > 0} {
-            set values [::xo::db::list_to_values $calendar_ids integer] 
+            set values [::xo::db::list_to_values $calendar_ids integer]
             set result [list "select calendar_id from $values as values(calendar_id)"]
         } else {
             set result {}
         }
         return $result
     }
-    
+
     :public object method communityCalendarClause {
         user_id:integer
     } {
@@ -225,7 +225,7 @@ nx::Object create ::caldav::calendars {
                                      select distinct dcc.community_id
                                      from dotlrn_communities_core dcc
                                      inner join dotlrn_member_rels_approved dma
-                                     on dcc.community_id = dma.community_id 
+                                     on dcc.community_id = dma.community_id
                                      and dma.user_id = $user_id
                                      and dcc.archived_p = 'f'
                                      )
@@ -241,7 +241,7 @@ nx::Object create ::caldav::calendars {
         }
         return $result
     }
-    
+
     :public object method calendar_clause {
         {-calendar_ids:integer,0..n ""}
         {-user_id:integer}
@@ -250,7 +250,7 @@ nx::Object create ::caldav::calendars {
         #
         # When calendar_ids are empty, user_id has to be specified
         #
-        
+
         if {$calendar_ids eq ""} {
             lappend clauses \
                 {*}[:communityCalendarClause $user_id] \
@@ -279,21 +279,21 @@ nx::Object create ::caldav::calendars {
         # Get feed of calendar items for a given user.
         #
         # @return list set of calendar item objects
-        
+
         :debug "get_calitems [current args]"
-        
+
         if {$start_date ne "" && $end_date ne ""} {
             set time_limitation_clause [subst { and start_date between
                 to_timestamp('$start_date','YYYY-MM-DD HH24:MI:SS')
                 and to_timestamp('$end_date', 'YYYY-MM-DD HH24:MI:SS')
             }]
         } else {
-            set time_limitation_clause ""          
+            set time_limitation_clause ""
         }
-        
+
         set eventlist {}
         set recurrences {}
-        
+
         #
         # Note that we can have items without a entry in cal_uids for
         # these we will use the activity_id as uid calendars of
@@ -336,7 +336,7 @@ nx::Object create ::caldav::calendars {
 
             #ns_log notice "get_calitems: item $cal_item_id calendar $calendar_id" \
                 "we got an recurrence <$recurrence_id>"
-            
+
             if {$recurrence_id ne "" && $recurrence_id in $recurrences} {
                 #
                 # Don't report calendar items with recurrence multiple
@@ -357,7 +357,7 @@ nx::Object create ::caldav::calendars {
                                 -summary $name \
                                 -description $description \
                                ]
-            
+
             $caldavItem destroy_on_cleanup
             lappend eventlist $caldavItem
             lappend recurrences $recurrence_id
@@ -369,7 +369,7 @@ nx::Object create ::caldav::calendars {
 
 caldav::calendars eval {
     # TODO: should be probably moved to the ical procs.
-    
+
     set :opaque_tags {CATEGORIES CLASS COMMENT GEO
         PERCENT-COMPLETE PRIORITY RESOURCES STATUS SEQUENCE URL
         X-APPLE-STRUCTURED-LOCATION
@@ -388,7 +388,7 @@ caldav::calendars eval {
         #:debug "set_date_time parses $date $time $utc ($tz)-> [::xo::ical clock_to_oacstime $clock]"
         return [::xo::ical clock_to_oacstime $clock]
     }
-    
+
     :public object method parse {
         text
     } {
@@ -531,7 +531,7 @@ caldav::calendars eval {
         if {$calendar_name eq ""} {
             set $calendar_name "Calendar from [ad_system_name]"
         }
-        
+
         append lines \
             "BEGIN:VCALENDAR" \r\n \
             "X-WR-CALNAME:$calendar_name" \r\n \
@@ -540,7 +540,7 @@ caldav::calendars eval {
             "VERSION:2.0" \r\n \
             "METHOD:PUBLISH" \r\n
     }
-    
+
     :public object method footer {} {
         #
         # Return the footer of the ical file.
@@ -553,7 +553,7 @@ caldav::calendars eval {
         #
         # Return the timezone
         #
-        
+
         # GN TODO: don't hardcode timezone
 
         set timezone [lang::system::timezone]
@@ -562,13 +562,13 @@ caldav::calendars eval {
         set default_offset [linex $date_info 1]
 
         # TZOFFSETFROM: local time offset from GMT when daylight saving time is in operation,
-        # TZOFFSETTO is the local time offset from GMT when standard time is in operation.            
+        # TZOFFSETTO is the local time offset from GMT when standard time is in operation.
         # set TZOFFSETFROM "+0100"
         # set TZOFFSETTO "+0200"
 
         set TZOFFSETFROM $default_offset
         set TZOFFSETTO $default_offset
-        
+
         #
         # Compute offsets. It is not so easy to come up with a variant
         # that works under linux and macOS, since the results of zdump
