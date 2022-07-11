@@ -26,8 +26,9 @@ nx::Object create ::caldav::calendars {
     :public object method format_recurrence {
         {-recurrence_id:integer,0..1}
     } {
-        # Return the recurrence specification in form of an ical RRULE.
-        # @param recurrence_id is the unique id of the recurrence item.
+        # Return the recurrence specification in form of a formatted
+        # ical RRULE.  @param recurrence_id is the unique id of the
+        # recurrence item.
 
         if {$recurrence_id eq ""} {
             return ""
@@ -81,7 +82,7 @@ nx::Object create ::caldav::calendars {
         }
 
         #ns_log notice "recur_rule $recur_rule"
-        return "$recur_rule\r\n"
+        return [::xo::ical reflow_content_line $recur_rule]\r\n
     }
 
 

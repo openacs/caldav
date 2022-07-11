@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <implements-subsite-p>f</implements-subsite-p>
     <inherit-templates-p>f</inherit-templates-p>
-    <version name="0.4" url="http://openacs.org/repository/download/apm/caldav-0.4.apm">
+    <version name="0.5" url="http://openacs.org/repository/download/apm/caldav-0.5.apm">
         <owner url="mailto:neumann@wu-wien.ac.at">Gustaf Neumann</owner>
         <owner url="mailto:Markus.Moser@wu.ac.at">Markus Moser</owner>
 	<vendor url="http://wu.ac.at">WU Vienna</vendor>
@@ -26,9 +26,9 @@ The package does not depend on DotLRN, but uses some of its features,
 when it is installed.        
 	</description>
         <maturity>0</maturity>
-        <provides url="caldav" version="0.4"/>
+        <provides url="caldav" version="0.5"/>
         <requires url="calendar" version="2.10.0d1"/>
-        <requires url="xotcl-core" version="5.10.0d8"/>
+        <requires url="xotcl-core" version="5.10.0d9"/>
 	<requires url="acs-automated-testing" version="5.10.1d1"/>
     </version>
 </package>
