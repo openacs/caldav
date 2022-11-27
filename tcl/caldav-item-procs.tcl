@@ -52,7 +52,7 @@ namespace eval ::caldav {
             #   TODO: probably not the best way.
             #
             # - it imports the attributes of the ical_vars into
-            #   instance attributes. TOOD: this is dangerous
+            #   instance attributes. TODO: this is dangerous
             #
             # - it flags entries as all day events
 

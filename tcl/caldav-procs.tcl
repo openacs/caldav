@@ -1345,7 +1345,7 @@ namespace eval ::caldav {
                             ns_log warning "CalDAV: user tried to perform a PUT on a read only item item: $cal_item_id user ${:user_id}"
                             if {[string match "*CalDavSynchronizer*" ${:user_agent}]} {
                                 #
-                                # Outlook sychronizer will continue
+                                # Outlook synchronizer will continue
                                 # hammering if 403 is returned,
                                 # therefore try a different status
                                 # code.
