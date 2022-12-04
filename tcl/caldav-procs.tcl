@@ -34,11 +34,11 @@ namespace eval ::caldav {
     ad_proc -private get_sync_calendar {
         -user_id:required
     } {
-        
+
         Get the calendar, to which we want to sync.  This method
         returns the first (and only in usual installations)
         calendar_id if it is found.
-        
+
     } {
         set calendar_id [ns_cache_eval ns:memoize caldav-sync-cal-$user_id \
                              ::xo::dc list get_sync_calendar {
@@ -109,12 +109,12 @@ namespace eval ::caldav {
     # of every HTTP method implementation, "response" should be used
     # for delivering the result.
     #
-    
+
     CalDAV instproc response {code mimetype response} {
         ns_log Debug(caldav-request) "Response ([ns_conn partialtimes]) for ${:method} $code ${:uri}\n$response"
         ns_return $code $mimetype $response
     }
-    
+
     CalDAV instproc getcontent {{headers ""}} {
         lappend headers Content-Type ""  User-Agent ""
         foreach {tag default} $headers {
@@ -135,7 +135,7 @@ namespace eval ::caldav {
         return $uid
     }
 
-    
+
     ###
     ###  HTTP method GET
     ###
@@ -147,18 +147,18 @@ namespace eval ::caldav {
         syntax of the URL.
 
         - individual cal_items (must end with .ics)
-        
+
         /caldav/calendar/12872/12907.ics
-        
+
         -  complete calendar
-        
+
         /caldav/calendar
         /caldav/calendar?calendar_ids=12872
         /caldav/calendar/12872
 
         where the "12872" is a calendar_id and "12907"
         is the UID of a calendar item.
-        
+
     } {
         # the following getcontent call is just for consistent logging
         :getcontent
@@ -177,9 +177,9 @@ namespace eval ::caldav {
             set uid [:get_uid_from_href ${:uri}]
             :debug "return single calendar item for uid $uid"
 
-            # 
+            #
             # We need the calendar_ids for consistent naming of
-            # calendars (aggregated, etc.).... 
+            # calendars (aggregated, etc.)....
             #
             if {[string is integer -strict [lindex ${:urlv} end-1]]} {
                 set calendar_ids [lindex ${:urlv} end-1]
@@ -214,7 +214,7 @@ namespace eval ::caldav {
                     limit 1
                 }]
             }
-            
+
             #:debug "cal_items 2: <$cal_items>"
             if {[llength $cal_items] == 1} {
                 lassign [lindex $cal_items 0] cal_item_id ical_vars creation_date last_modified
@@ -235,7 +235,7 @@ namespace eval ::caldav {
                 array unset c
                 append resp [$vevent as_ical_calendar -calendar_name [:calendarName]]
                 $vevent destroy
-                
+
                 # GN TODO: do we need always the database to get an etag ?
                 ns_set put [ns_conn outputheaders] ETag [subst {"[:getETagByUID $uid]"}]
                 set code 200
@@ -262,7 +262,7 @@ namespace eval ::caldav {
             # The query parameter "calendar_ids" is used e.g. for
             # regression testing.
             #
-            # GN TODO: 
+            # GN TODO:
             #
             if {[llength ${:urlv}] > 1} {
                 set calendar_ids [lindex ${:urlv} 1]
@@ -270,7 +270,7 @@ namespace eval ::caldav {
                 set calendar_ids [ns_queryget calendar_ids ""]
             }
             :calendar_ids $calendar_ids
-            
+
             if {$calendar_ids ne ""} {
                 #
                 # For specified calendars, return the calendar name of
@@ -320,8 +320,8 @@ namespace eval ::caldav {
         # SHOULD support "infinity" requests.  Servers SHOULD treat a
         # request without a Depth header as if a "Depth: infinity"
         # header was included.
-        # 
-        
+        #
+
         set depth [ns_set iget [ns_conn headers] Depth "infinity"]
         #ns_log notice "caldav: depth = $depth"
 
@@ -380,7 +380,7 @@ namespace eval ::caldav {
         # - PRINCIPAL:     /caldav/principal
         # - FULL CALENDAR: /caldav/calendar
         #
-        
+
         # GN TODO: remove the following test when we are sure it is ok.
         #ns_log notice "PROPFIND <${:uri}>, tail <[file tail ${:uri}]> urlv: <${:urlv}>"
         if {[file tail ${:uri}] ne [lindex ${:urlv} end]} {
@@ -418,7 +418,7 @@ namespace eval ::caldav {
                 #append response [:generateResponse -queryType calendar -calendar_id $calendar_id $prop]
                 append response [:generateResponse -queryType calendar -calendar_id "" $prop]
                 #ns_log notice "=== CALENDAR depth $depth FIND getetag=[$prop selectNodes -namespaces {d DAV:} //d:getetag] PROP [$prop asXML] "
-                
+
                 if {$depth ne "0"} {
                     #
                     # Search in depth 1 to deeper. Since all our
@@ -472,7 +472,7 @@ namespace eval ::caldav {
         #
         set :calendar_ids $value
     }
-    
+
     CalDAV instproc calendarName {} {
         :debug "calendarName has :calendar_ids <${:calendar_ids}>"
         if {${:calendar_ids} eq ""} {
@@ -484,7 +484,7 @@ namespace eval ::caldav {
         }
         return $calendar_name
     }
-    
+
     CalDAV instproc aggregatedCalendarName {} {
         set d [site_node::get_from_object_id -object_id [ad_conn subsite_id]]
         set instance_name [lang::util::localize [dict get $d instance_name]]
@@ -647,14 +647,14 @@ namespace eval ::caldav {
         # followed by US-ASCII decimal 10).
         #
         # https://www.ietf.org/mail-archive/web/caldav/current/msg00551.html
-        
+
         if {${:queryType} eq "resource"} {
             return [ns_quotehtml [$res as_ical_calendar]]
         } else {
             ns_log warning "CalDav can't return c-calendar-data for ${:queryType}"
         }
     }
-    
+
     CalDAV instproc property=c-calendar-home-set {res node} {
         return <d:href>${:url}calendar</d:href>
     }
@@ -742,7 +742,7 @@ namespace eval ::caldav {
         -cal_item
         node
     } {
-        
+
         Return a &lt;response&gt; ... &lt;/response&gt; entry for the
         URL specified in the ${:url} and for the query attributes
         specified in the tdom node. The attributes user_id,
@@ -751,11 +751,11 @@ namespace eval ::caldav {
 
         @param queryType is an abstraction of the query url and
         can be "calendar", "resource", "top", or "principal"
-        
+
     } {
         # @prop: requested properties as tdom nodes
         # generate xml for this resource
-        
+
         #ns_log notice "generateResponse $queryType"
         set :queryType $queryType
         switch $queryType {
@@ -794,7 +794,7 @@ namespace eval ::caldav {
         append result \
             <d:response> \n \
             <d:href>$href</d:href> \n
-        
+
         if {$found_props ne ""} {
             #
             # return 200 for properties that were found
@@ -824,10 +824,10 @@ namespace eval ::caldav {
     ### HTTP method PROPPATCH
     ###
     CalDAV instproc PROPPATCH {} {
-        
+
         set content [:getcontent]
         set doc [:parseRequest $content]
-        
+
         # TODO: we assume, we are working on the aggregated calendar
         :calendar_ids ""
 
@@ -836,7 +836,7 @@ namespace eval ::caldav {
         }
         set reply ""
         set innerresponse ""
-        
+
         set root [$doc documentElement]
         set props [$root selectNodes -namespaces ${:namespaces} /d:propertyupdate/d:set/d:prop]
         if {[llength $props] == 0} {
@@ -871,12 +871,12 @@ namespace eval ::caldav {
     CalDAV ad_instproc REPORT {} {
 
         CalDAV REPORT Method, see RFC 3253, section 3.6
-        
+
     } {
 
         set content [:getcontent]
         set doc [:parseRequest $content]
-        
+
         if {$doc eq ""} {
             return [:request_error "empty reports are not allowed"]
         }
@@ -896,10 +896,10 @@ namespace eval ::caldav {
 
         if {[$root selectNodes -namespaces {c urn:ietf:params:xml:ns:caldav} "//c:calendar-multiget"] ne ""} {
             set ics_set [:calendar-multiget [$root firstChild]]
-            
+
         } elseif {[$root selectNodes -namespaces {c urn:ietf:params:xml:ns:caldav} "//c:calendar-query"] ne ""} {
             set ics_set [:calendar-query $root]
-            
+
         } elseif {[$root selectNodes -namespaces {d DAV:} "//d:sync-collection"] ne ""} {
             set ics_set [:sync-collection $root responses_xml]
 
@@ -924,10 +924,10 @@ namespace eval ::caldav {
         $doc delete
     }
 
-    
-    
+
+
     CalDAV ad_instproc calendar-multiget {prop} {
-        
+
         calendar-multiget REPORT is used to retrieve specific calendar
         object resources from within a collection, if the Request- URI
         is a collection, or to retrieve a specific calendar object
@@ -936,7 +936,7 @@ namespace eval ::caldav {
         REPORT (see Section 7.8), except that it takes a list of
         DAV:href elements, instead of a CALDAV:filter element, to
         determine which calendar object resources to return.
-        
+
         https://icalendar.org/CalDAV-Access-RFC-4791/7-9-caldav-calendar-multiget-report.html
     } {
         #ns_log notice "==== calendar-multiget {$prop}"
@@ -960,7 +960,7 @@ namespace eval ::caldav {
                 lappend cal_uids [ns_urldecode $id]
             }
         }
-        
+
         #
         # GN TODO: it is probably better to use a UNION instead of the
         # construct of "coalesce()" and "OR" below. We need to
@@ -975,14 +975,14 @@ namespace eval ::caldav {
             lappend uid_clauses "e.activity_id in ([ns_dbquotelist $act_ids])"
         }
         ns_log notice uid_clauses=$uid_clauses
-        
+
         set recurrences {}
         set ics_set {}
 
         #
         # TODO: why not [calendar get_calitems] ?
         #
-        
+
         foreach row [::xo::dc list_of_lists get_calitems [subst {
             select
             md5(last_modified::text) as etag,
@@ -1017,7 +1017,7 @@ namespace eval ::caldav {
             lassign $row etag cal_uid ical_vars calendar_id item_type \
                 start_date end_date name description \
                 cal_item_id recurrence_id creation_date last_modified
-            
+
             if {$recurrence_id ne "" && $recurrence_id in $recurrences} {
                 continue
             }
@@ -1067,7 +1067,7 @@ namespace eval ::caldav {
         #
         set time_range [$root selectNodes -namespaces {c urn:ietf:params:xml:ns:caldav} "//c:time-range"]
         #ns_log notice "time-range : $time_range"
-        
+
         if {$time_range ne ""} {
             if {[$time_range hasAttribute start]} {
                 set start [$time_range getAttribute start]
@@ -1079,7 +1079,7 @@ namespace eval ::caldav {
             }
         }
         ns_log notice "calendar-query: start time $start end time $end"
-        
+
         #
         # components
         #
@@ -1101,7 +1101,7 @@ namespace eval ::caldav {
         sync
     } {
         upvar $extraXMLvar extraXML
-        
+
         set props [$root selectNodes -namespaces {d DAV:} "//d:prop"]
         #set sync_level_node [$root selectNodes -namespaces {d DAV:} "//d:sync-level"]
         set sync_token_node [$root selectNodes -namespaces {d DAV:} "//d:sync-token"]
@@ -1117,13 +1117,13 @@ namespace eval ::caldav {
         #
         set new_sync_token [:calcSyncToken ${:user_id}]
         set extraXML <d:sync-token>$new_sync_token</d:sync-token>
-        
+
         if {$sync_token eq ""} {
             #
             # return all cal_items
             #
             set ics_set [calendars get_calitems -user_id ${:user_id}]
-            
+
         } elseif {$sync_token ne $new_sync_token} {
             #
             # return cal_items since last sync_token
@@ -1156,7 +1156,7 @@ namespace eval ::caldav {
         :response 200 "text/plain" {}
     }
 
-    
+
     CalDAV ad_instproc calcCtag {user_id} {
 
         Generate a ctag (collection entity tag). The calendar ctag is
@@ -1262,7 +1262,7 @@ namespace eval ::caldav {
 
         UPDATE (SAVE?) a single calendar item denoted by a uid of a
         calendar item.
-        
+
     } {
         set content [:getcontent {If-Match ""}]
         set ifmatch [ns_set iget [ns_conn headers] If-Match "*"]
@@ -1274,7 +1274,7 @@ namespace eval ::caldav {
         if {![string match *.ics ${:uri}]} {
             return [:request_error "Trying to PUT on a calendar that does not end with *.ics: ${:uri}"]
         }
-        
+
         try {
             set sync_calendar_id [::caldav::get_sync_calendar -user_id ${:user_id}]
         } on error {errorMsg} {
@@ -1300,7 +1300,7 @@ namespace eval ::caldav {
                 # we know, the sync calendar is always writable for the
                 # current user.
                 #
-                # - GN TODO: not sure, when mutating the UID is necessary, and 
+                # - GN TODO: not sure, when mutating the UID is necessary, and
                 #   whether adding a suffix with the user_id is the best solution.
                 #   So we deactivate this code for now....
                 #
@@ -1338,7 +1338,7 @@ namespace eval ::caldav {
                     lassign $cal_info calendar_id cal_item_id
 
                     :debug "write check needed? [expr {$calendar_id ne $sync_calendar_id}]"
-                    
+
                     if {$calendar_id != $sync_calendar_id} {
                         set can_write_p [permission::permission_p -object_id $cal_item_id -privilege write]
                         :debug "write check: $can_write_p (calendar_id $calendar_id, sync_calendar_id $sync_calendar_id)"
@@ -1372,7 +1372,7 @@ namespace eval ::caldav {
             #
             :debug "updating item [$item cget -uid] in calendar $sync_calendar_id"
             :item_update -calendar_id $sync_calendar_id -item $item
-            
+
             #ns_log notice "CalDAV PUT: [$item serialize]"
             ns_set put [ns_conn outputheaders] ETag [subst {"[:getETagByUID [$item cget -uid]]"}]
             $item destroy
@@ -1445,15 +1445,15 @@ namespace eval ::caldav {
                                  -location $location \
                                  -cal_uid $uid \
                                  -ical_vars $ical_vars]
-            
+
             $item add_recurrence -cal_item_id $cal_item_id
-            
+
         } else {
             #
             # Update an existing item
             #
             :debug "update/edit cal_item_id $cal_item_id uid <$uid> ical_vars $ical_vars"
-            
+
             calendar::item::edit \
                 -cal_item_id $cal_item_id \
                 -start_date ${dtstart} \
@@ -1469,7 +1469,7 @@ namespace eval ::caldav {
             set recurrence_id [::xo::dc get_value -prepare integer get_recurrence {
                 select recurrence_id from acs_events where event_id = :cal_item_id
             }]
-            
+
             $item edit_recurrence \
                 -cal_item_id $cal_item_id \
                 -recurrence_id $recurrence_id
