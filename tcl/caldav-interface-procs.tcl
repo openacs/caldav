@@ -119,7 +119,7 @@ nx::Object create ::caldav::calendars {
         } else {
             set calclause "= :calendar_ids"
         }
-        set e_clause [expr {[string is integer $uid] ? " or e.activity_id = :uid" : ""}]
+        set e_clause [expr {[nsf::is integer $uid] ? " or e.activity_id = :uid" : ""}]
 
         return [::xo::dc list get_cal_item_from_uid [subst {
             select cal_item_id
@@ -166,7 +166,7 @@ nx::Object create ::caldav::calendars {
             limit 1
         }]
 
-        # set e_clause [expr {[string is integer $uid] ? " or e.activity_id = :uid" : ""}]
+        # set e_clause [expr {[nsf::is integer $uid] ? " or e.activity_id = :uid" : ""}]
         #
         # - we could pass-in a calendar-clause, would save a query in
         #   the PUT case
