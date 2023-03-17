@@ -446,6 +446,7 @@ namespace eval ::caldav {
                 $doc delete
                 ad_log warning "caldav: PROFIND called for unknown resource: '${:uri}'"
                 :response 404 text/plain "no such resource: '${:uri}'"
+                return
                 #return [:request_error "invalid URI '${:uri}'"]
             }
         }
