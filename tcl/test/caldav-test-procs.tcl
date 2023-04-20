@@ -1,3 +1,8 @@
+ad_library {
+
+    Tests for the CalDAV package.
+
+}
 
 namespace eval ::caldav::test {
 
