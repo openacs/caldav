@@ -4,6 +4,22 @@ ad_library {
 
 }
 
+aa_register_case -cats {
+    smoke production_safe
+} -procs {
+    util::which
+} caldav_exec_dependencies {
+    Test external command dependencies for this package.
+} {
+    foreach cmd [list \
+                     [::util::which date] \
+                     [::util::which zdump] \
+                     [::util::which tail] \
+                    ] {
+        aa_true "'$cmd' is executable" [file executable $cmd]
+    }
+}
+
 namespace eval ::caldav::test {
 
     ad_proc -private basic_setup {
