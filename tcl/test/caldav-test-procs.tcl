@@ -14,7 +14,6 @@ aa_register_case -cats {
     foreach cmd [list \
                      [::util::which date] \
                      [::util::which zdump] \
-                     [::util::which tail] \
                     ] {
         aa_true "'$cmd' is executable" [file executable $cmd]
     }
