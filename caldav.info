@@ -27,8 +27,8 @@ when it is installed.
 	</description>
         <maturity>0</maturity>
         <provides url="caldav" version="0.5"/>
-        <requires url="calendar" version="2.10.0d1"/>
-        <requires url="xotcl-core" version="5.10.0d9"/>
-	<requires url="acs-automated-testing" version="5.10.1d1"/>
+        <requires url="calendar" version="2.10.1b1"/>
+        <requires url="xotcl-core" version="5.10.1b1"/>
+	<requires url="acs-automated-testing" version="5.10.1b1"/>
     </version>
 </package>
