@@ -558,7 +558,7 @@ caldav::calendars eval {
         # GN TODO: don't hardcode timezone
 
         set timezone [lang::system::timezone]
-        set date_info [exec date "+%Z %z"]
+        set date_info [exec [util::which date] "+%Z %z"]
         set TZNAME [linex $date_info 0]
         set default_offset [linex $date_info 1]
 
@@ -578,7 +578,7 @@ caldav::calendars eval {
         #
         try {
             set year [clock format [clock seconds] -format %Y ]
-            set lines [exec zdump -v [lang::system::timezone] | fgrep $year]
+            set lines [exec [::util::which zdump] -v [lang::system::timezone] | fgrep $year]
             foreach l [split $lines \n] {
                 #
                 # Compute date difference in seconds
