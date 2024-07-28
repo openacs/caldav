@@ -368,7 +368,7 @@ namespace eval ::caldav::test {
 
     ad_proc -private ::caldav::test::foreach_response {var xml body} {
         upvar $var response
-	dom parse $xml doc
+	dom parse -- $xml doc
 	$doc documentElement root
         try {
             set responses [$root selectNodes //d:response]
@@ -988,7 +988,7 @@ aa_register_case -cats {web} -procs {
 
             incr nr_responses
         }
-        dom parse $xml doc
+        dom parse -- $xml doc
 	$doc documentElement root
         ::acs::test::xpath::non_empty $root {
             d:sync-token

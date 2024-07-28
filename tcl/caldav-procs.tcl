@@ -355,7 +355,7 @@ namespace eval ::caldav {
         # Special case allprop: return all properties
         #
         if {$elementName eq "allprop"} {
-            dom parse {
+            dom parse -- {
                 <A:prop xmlns:A="DAV:">
                 <A:getcontenttype/>
                 <A:getetag/>
@@ -1201,7 +1201,7 @@ namespace eval ::caldav {
     CalDAV instproc parseRequest {content} {
         try {
             #dom setResultEncoding utf-8
-            set document [dom parse $content]
+            set document [dom parse -- $content]
         } on error {errorMsg} {
             ns_log error "CalDAV: parsing of request lead to error: $errorMsg!\n$content"
             throw {DOM PARSE {dom parse triggered exception}} $errorMsg
