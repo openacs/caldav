@@ -13,6 +13,7 @@
         <owner url="mailto:Markus.Moser@wu.ac.at">Markus Moser</owner>
 	<vendor url="http://wu.ac.at">WU Vienna</vendor>
         <summary>CalDAV integration for OpenACS Calendar</summary>
+        <release-date>2024-09-02</release-date>
 	<description format="text/plain">
 The CalDAV functionality was originally developed as an extension of
 the calendar package in 2006 by Gustaf Neumann [1], then extended by
