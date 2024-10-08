@@ -232,7 +232,7 @@ namespace eval ::caldav {
                                 -location $c(location) \
                                 -summary $c(name) \
                                 -description $c(description)]
-                array unset c
+                unset -nocomplain c
                 append resp [$vevent as_ical_calendar -calendar_name [:calendarName]]
                 $vevent destroy
 
