@@ -194,6 +194,9 @@ nx::Object create ::caldav::calendars {
         {-with_sync_calendar:boolean true}
         user_id:integer
     } {
+        #
+        # @return the calendar_ids, which should be always returned
+        #
         lappend calendar_ids {*}[::caldav::get_public_calendars]
         if {$with_sync_calendar} {
             lappend calendar_ids [::caldav::get_sync_calendar -user_id $user_id]
@@ -204,6 +207,9 @@ nx::Object create ::caldav::calendars {
     :public object method alwaysQueriedClause {
         user_id:integer
     } {
+        #
+        # @return SQL clause which is always queried
+        #
         set calendar_ids [:alwaysQueriedCalendars $user_id]
         if {[llength $calendar_ids] > 0} {
             set values [::xo::db::list_to_values $calendar_ids integer]
