@@ -113,7 +113,7 @@ nx::Object create ::caldav::calendars {
         #
         #
         if {[llength $calendar_ids] > 1} {
-            set calclause "in ( [template::util::tcl_to_sql_list $calendar_ids] )"
+            set calclause "in ( [ns_dbquotelist $calendar_ids] )"
         } elseif {[llength $calendar_ids] eq 0} {
             return 0
         } else {
@@ -171,7 +171,7 @@ nx::Object create ::caldav::calendars {
         # - we could pass-in a calendar-clause, would save a query in
         #   the PUT case
         #if {[llength $calendar_ids] > 1} {
-        #    set calclause "in ( [template::util::tcl_to_sql_list $calendar_ids] )"
+        #    set calclause "in ( [ns_dbquotelist $calendar_ids] )"
         #} elseif {[llength $calendar_ids] eq 0} {
         #    return 0
         #} else {
@@ -266,7 +266,7 @@ nx::Object create ::caldav::calendars {
         } elseif {[llength $calendar_ids] == 1} {
             set clause [subst {and $attr = :calendar_ids}]
         } else {
-            set clause [subst {and $attr in ( [template::util::tcl_to_sql_list $calendar_ids] )}]
+            set clause [subst {and $attr in ( [ns_dbquotelist $calendar_ids] )}]
         }
         :debug calendar_clause=$clause-calendar_ids=$calendar_ids
         return $clause
